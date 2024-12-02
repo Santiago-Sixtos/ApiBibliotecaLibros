@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { getAuthors, saveAuthors } = require('../models/authorModel');
+const { getAuthors, saveAuthors } = require('../Models/authorModel');
 
 /**
  * @swagger

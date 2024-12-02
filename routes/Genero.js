@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { getGenres, saveGenres } = require('../models/genreModel');
+const { getGenres, saveGenres } = require('../Models/genreModel');
 
 /**
  * @swagger
