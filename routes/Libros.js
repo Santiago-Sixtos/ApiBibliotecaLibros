@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { getBooks, saveBooks } = require('../models/bookModel'); // Importa las funciones para manejar los libros
+const { getBooks, saveBooks } = require('../models/bookModel.js'); // Importa las funciones para manejar los libros
 
 /**
  * @swagger
