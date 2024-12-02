@@ -1,0 +1,52 @@
+[
+  {
+    "id": 1,
+    "name": "Antoine de Saint-Exupéry",
+    "bio": "Aviador y escritor frances de la obra el principito."
+  },
+  {
+    "id": 2,
+    "name": "María Pérez",
+    "bio": "María es una autora apasionada por la ficción histórica."
+  },
+  {
+    "id": 3,
+    "name": "Juan Martínez",
+    "bio": "Juan escribe sobre ciencia y tecnología contemporánea."
+  },
+  {
+    "id": 4,
+    "name": "Ana González",
+    "bio": "Ana se especializa en poesía y ha publicado varias colecciones."
+  },
+  {
+    "id": 5,
+    "name": "Carlos Rodríguez",
+    "bio": "Carlos es conocido por sus thrillers psicológicos."
+  },
+  {
+    "id": 6,
+    "name": "Lucía Fernández",
+    "bio": "Lucía escribe novelas románticas que tocan el corazón."
+  },
+  {
+    "id": 7,
+    "name": "Luis Torres",
+    "bio": "Luis es un autor de libros de ciencia ficción y fantasía."
+  },
+  {
+    "id": 8,
+    "name": "Elena Morales",
+    "bio": "Elena escribe sobre viajes y aventuras por el mundo."
+  },
+  {
+    "id": 9,
+    "name": "Miguel López",
+    "bio": "Miguel es conocido por sus estudios sobre historia antigua."
+  },
+  {
+    "id": 10,
+    "name": "Sofía García",
+    "bio": "Sofía es una autora de libros de desarrollo personal y autoayuda."
+  }
+]
