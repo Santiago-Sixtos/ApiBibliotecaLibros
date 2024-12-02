@@ -9,7 +9,7 @@ const getBooks = async () => {
 };
 
 const saveBooks = async (books) => {
-    fs.writeFileSync(filePath, JSON.stringify(books, null, 2));
+    await fs.writeFileSync(filePath, JSON.stringify(books, null, 2));
 };
 
 module.exports = { getBooks, saveBooks };
