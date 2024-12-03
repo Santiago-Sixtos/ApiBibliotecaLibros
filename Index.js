@@ -23,7 +23,7 @@ const swaggerOptions = {
             description: datosReadme
         },
         servers: [
-            { url: process.env.RAILWAY_PUBLIC_DOMAIN ? process.env.RAILWAY_PUBLIC_DOMAIN : `http://localhost:${port}` }
+            { url: 'https://apibibliotecalibros-production.up.railway.app' }
         ],
     },
     apis: [`${path.join(__dirname, "routes","*.js")}`],
