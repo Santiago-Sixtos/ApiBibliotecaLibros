@@ -42,3 +42,5 @@ app.use('/genres', genreRoutes);
 app.listen(3002, () => {
     console.log('Servidor corriendo en http://localhost: ${port}');
 });
+
+// mysql://root:@autorack.proxy.rlwy.net:55180/railway

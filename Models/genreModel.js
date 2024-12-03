@@ -4,12 +4,28 @@ const path = require('path');
 const filePath = path.join(__dirname, 'genres.json');
 
 const getGenres = () => {
-    const data = fs.readFileSync(filePath);
-    return JSON.parse(data);
+    return new Promise((resolve, reject) => {
+        fs.readFile(filePath, 'utf8', (err, data) => {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(JSON.parse(data));
+            }
+        });
+    });
 };
 
 const saveGenres = (genres) => {
-    fs.writeFileSync(filePath, JSON.stringify(genres, null, 2));
+    return new Promise((resolve, reject) => {
+        fs.writeFile(filePath, JSON.stringify(genres, null, 2), (err) => {
+            if (err) {
+                reject(err);
+            } else {
+                resolve();
+            }
+        });
+    });
 };
 
 module.exports = { getGenres, saveGenres };
+
