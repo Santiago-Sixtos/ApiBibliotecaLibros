@@ -1,17 +1,5 @@
 const express = require('express');
 const router = express.Router();
-const mysql = require('mysql2/promise');
-require('dotenv').config({ path: require('path').resolve(__dirname, '../Direcciones.env') });
-
-const getConnection = async () => {
-    return await mysql.createConnection({
-        host: process.env.DB_HOST,
-        user: process.env.DB_USER,
-        password: process.env.DB_PASSWORD,
-        database: process.env.DB_NAME,
-        port: process.env.DB_PORT
-    });
-};
 
 /**
  * @swagger
@@ -71,9 +59,7 @@ const getConnection = async () => {
  *                 $ref: '#/components/schemas/Libro'
  */
 router.get('/', async (req, res) => {
-    const connection = await getConnection();
-    const [rows] = await connection.execute('SELECT * FROM books');
-    await connection.end();
+    const [rows] = await req.db.execute('SELECT * FROM books');
     res.json(rows);
 });
 
@@ -101,11 +87,9 @@ router.get('/', async (req, res) => {
  *         description: Libro añadido
  */
 router.post('/', async (req, res) => {
-    const connection = await getConnection();
     const { id, title, author_id, genre_id, published_year, description } = req.body;
-    await connection.execute('INSERT INTO books (id, title, author_id, genre_id, published_year, description) VALUES (?, ?, ?, ?, ?, ?)', 
+    await req.db.execute('INSERT INTO books (id, title, author_id, genre_id, published_year, description) VALUES (?, ?, ?, ?, ?, ?)', 
     [id, title, author_id, genre_id, published_year, description]);
-    await connection.end();
     res.json(req.body);
 });
 
@@ -130,9 +114,7 @@ router.post('/', async (req, res) => {
  *               $ref: '#/components/schemas/Libro'
  */
 router.get('/:id', async (req, res) => {
-    const connection = await getConnection();
-    const [rows] = await connection.execute('SELECT * FROM books WHERE id = ?', [req.params.id]);
-    await connection.end();
+    const [rows] = await req.db.execute('SELECT * FROM books WHERE id = ?', [req.params.id]);
     if (rows.length > 0) {
         res.json(rows[0]);
     } else {
@@ -170,11 +152,9 @@ router.get('/:id', async (req, res) => {
  *         description: Libro actualizado
  */
 router.put('/:id', async (req, res) => {
-    const connection = await getConnection();
     const { title, author_id, genre_id, published_year, description } = req.body;
-    await connection.execute('UPDATE books SET title = ?, author_id = ?, genre_id = ?, published_year = ?, description = ? WHERE id = ?', 
+    await req.db.execute('UPDATE books SET title = ?, author_id = ?, genre_id = ?, published_year = ?, description = ? WHERE id = ?', 
     [title, author_id, genre_id, published_year, description, req.params.id]);
-    await connection.end();
     res.json(req.body);
 });
 
@@ -195,9 +175,7 @@ router.put('/:id', async (req, res) => {
  *         description: Libro eliminado
  */
 router.delete('/:id', async (req, res) => {
-    const connection = await getConnection();
-    await connection.execute('DELETE FROM books WHERE id = ?', [req.params.id]);
-    await connection.end();
+    await req.db.execute('DELETE FROM books WHERE id = ?', [req.params.id]);
     res.send('Libro eliminado');
 });
 

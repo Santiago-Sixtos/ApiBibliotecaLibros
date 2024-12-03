@@ -16,20 +16,23 @@ app.use(cors());
 app.use(express.json()); // Para manejar JSON en las peticiones
 const datosReadme = fs.readFileSync(path.join(__dirname,'readme.md'),{ encoding: 'utf8', flag: 'r' });
 
-const connection = await mysql.createConnection({ 
-    host: process.env.DB_HOST, 
-    user: process.env.DB_USER, 
-    password: process.env.DB_PASSWORD, 
-    database: process.env.DB_NAME, 
-    port: process.env.DB_PORT 
-}); 
-
-connection.connect((err) => { 
-    if (err) { console.error('Error conectando a la base de datos:', err.stack); 
-        return; 
-    } 
-    console.log('Conectado a la base de datos como id ' + connection.threadId); 
-});
+const getConnection = async () => { 
+    return await mysql.createConnection({ 
+        host: process.env.DB_HOST, 
+        user: process.env.DB_USER, 
+        password: process.env.DB_PASSWORD, 
+        database: process.env.DB_NAME, 
+        port: process.env.DB_PORT });
+    };
+    
+    // Middleware para establecer la conexión de la base de datos 
+    app.use(async (req, res, next) => { 
+        try { 
+            req.db = await getConnection(); next();
+        } catch (err) { 
+            next(err);
+        } 
+    });
 
 const swaggerOptions = {
     definition: {

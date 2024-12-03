@@ -1,17 +1,5 @@
 const express = require('express');
 const router = express.Router();
-const mysql = require('mysql2/promise');
-require('dotenv').config({ path: require('path').resolve(__dirname, '../Direcciones.env') });
-
-const getConnection = async () => {
-    return await mysql.createConnection({
-        host: process.env.DB_HOST,
-        user: process.env.DB_USER,
-        password: process.env.DB_PASSWORD,
-        database: process.env.DB_NAME,
-        port: process.env.DB_PORT
-    });
-};
 
 /**
  * @swagger
@@ -55,9 +43,7 @@ const getConnection = async () => {
  *                 $ref: '#/components/schemas/Género'
  */
 router.get('/', async (req, res) => {
-    const connection = await getConnection();
-    const [rows] = await connection.execute('SELECT * FROM genres');
-    await connection.end();
+    const [rows] = await req.db.execute('SELECT * FROM genres');
     res.json(rows);
 });
 
@@ -81,10 +67,8 @@ router.get('/', async (req, res) => {
  *         description: Género añadido
  */
 router.post('/', async (req, res) => {
-    const connection = await getConnection();
     const { id, name } = req.body;
-    await connection.execute('INSERT INTO genres (id, name) VALUES (?, ?)', [id, name]);
-    await connection.end();
+    await req.db.execute('INSERT INTO genres (id, name) VALUES (?, ?)', [id, name]);
     res.json(req.body);
 });
 
@@ -109,9 +93,7 @@ router.post('/', async (req, res) => {
  *               $ref: '#/components/schemas/Género'
  */
 router.get('/:id', async (req, res) => {
-    const connection = await getConnection();
-    const [rows] = await connection.execute('SELECT * FROM genres WHERE id = ?', [req.params.id]);
-    await connection.end();
+    const [rows] = await req.db.execute('SELECT * FROM genres WHERE id = ?', [req.params.id]);
     if (rows.length > 0) {
         res.json(rows[0]);
     } else {
@@ -145,10 +127,8 @@ router.get('/:id', async (req, res) => {
  *         description: Género actualizado
  */
 router.put('/:id', async (req, res) => {
-    const connection = await getConnection();
     const { name } = req.body;
-    await connection.execute('UPDATE genres SET name = ? WHERE id = ?', [name, req.params.id]);
-    await connection.end();
+    await req.db.execute('UPDATE genres SET name = ? WHERE id = ?', [name, req.params.id]);
     res.json(req.body);
 });
 
@@ -169,9 +149,7 @@ router.put('/:id', async (req, res) => {
  *         description: Género eliminado
  */
 router.delete('/:id', async (req, res) => {
-    const connection = await getConnection();
-    await connection.execute('DELETE FROM genres WHERE id = ?', [req.params.id]);
-    await connection.end();
+    await req.db.execute('DELETE FROM genres WHERE id = ?', [req.params.id]);
     res.send('Género eliminado');
 });
 

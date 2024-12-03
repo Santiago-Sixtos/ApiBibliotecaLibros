@@ -1,17 +1,5 @@
 const express = require('express');
 const router = express.Router();
-const mysql = require('mysql2/promise');
-require('dotenv').config({ path: require('path').resolve(__dirname, '../Direcciones.env') });
-
-const getConnection = async () => {
-    return await mysql.createConnection({
-        host: process.env.DB_HOST,
-        user: process.env.DB_USER,
-        password: process.env.DB_PASSWORD,
-        database: process.env.DB_NAME,
-        port: process.env.DB_PORT
-    });
-};
 
 /**
  * @swagger
@@ -59,9 +47,7 @@ const getConnection = async () => {
  *                 $ref: '#/components/schemas/Autor'
  */
 router.get('/', async (req, res) => {
-    const connection = await getConnection();
-    const [rows] = await connection.execute('SELECT * FROM authors');
-    await connection.end();
+    const [rows] = await req.db.execute('SELECT * FROM authors');
     res.json(rows);
 });
 
@@ -86,10 +72,8 @@ router.get('/', async (req, res) => {
  *         description: Autor añadido
  */
 router.post('/', async (req, res) => {
-    const connection = await getConnection();
     const { id, name, bio } = req.body;
-    await connection.execute('INSERT INTO authors (id, name, bio) VALUES (?, ?, ?)', [id, name, bio]);
-    await connection.end();
+    await req.db.execute('INSERT INTO authors (id, name, bio) VALUES (?, ?, ?)', [id, name, bio]);
     res.json(req.body);
 });
 
@@ -114,9 +98,7 @@ router.post('/', async (req, res) => {
  *               $ref: '#/components/schemas/Autor'
  */
 router.get('/:id', async (req, res) => {
-    const connection = await getConnection();
-    const [rows] = await connection.execute('SELECT * FROM authors WHERE id = ?', [req.params.id]);
-    await connection.end();
+    const [rows] = await req.db.execute('SELECT * FROM authors WHERE id = ?', [req.params.id]);
     if (rows.length > 0) {
         res.json(rows[0]);
     } else {
@@ -151,10 +133,8 @@ router.get('/:id', async (req, res) => {
  *         description: Autor actualizado
  */
 router.put('/:id', async (req, res) => {
-    const connection = await getConnection();
-    const { id, name, bio } = req.body;
-    await connection.execute('UPDATE authors SET name = ?, bio = ? WHERE id = ?', [name, bio, req.params.id]);
-    await connection.end();
+    const { name, bio } = req.body;
+    await req.db.execute('UPDATE authors SET name = ?, bio = ? WHERE id = ?', [name, bio, req.params.id]);
     res.json(req.body);
 });
 
@@ -175,10 +155,9 @@ router.put('/:id', async (req, res) => {
  *         description: Autor eliminado
  */
 router.delete('/:id', async (req, res) => {
-    const connection = await getConnection();
-    await connection.execute('DELETE FROM authors WHERE id = ?', [req.params.id]);
-    await connection.end();
+    await req.db.execute('DELETE FROM authors WHERE id = ?', [req.params.id]);
     res.send('Autor eliminado');
 });
 
 module.exports = router;
+
