@@ -23,7 +23,7 @@ const swaggerOptions = {
             description: datosReadme
         },
         servers: [
-            { url: "http://localhost: ${port}" }
+            { url: `http://localhost:${port}` }
         ],
     },
     apis: [`${path.join(__dirname, "routes","*.js")}`],
