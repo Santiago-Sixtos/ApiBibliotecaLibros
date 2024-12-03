@@ -23,7 +23,7 @@ const swaggerOptions = {
             description: datosReadme
         },
         servers: [
-            { url: `http://localhost:${port}` }
+            { url: process.env.RAILWAY_PUBLIC_DOMAIN ? process.env.RAILWAY_PUBLIC_DOMAIN : `http://localhost:${port}` }
         ],
     },
     apis: [`${path.join(__dirname, "routes","*.js")}`],
