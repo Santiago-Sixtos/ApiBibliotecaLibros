@@ -1,6 +1,17 @@
 const express = require('express');
 const router = express.Router();
-const { getBooks, saveBooks } = require('../Models/bookModel'); // Importa las funciones para manejar los libros
+const mysql = require('mysql2/promise');
+require('dotenv').config({ path: require('path').resolve(__dirname, '../Direcciones.env') });
+
+const getConnection = async () => {
+    return await mysql.createConnection({
+        host: process.env.DB_HOST,
+        user: process.env.DB_USER,
+        password: process.env.DB_PASSWORD,
+        database: process.env.DB_NAME,
+        port: process.env.DB_PORT
+    });
+};
 
 /**
  * @swagger
@@ -59,9 +70,11 @@ const { getBooks, saveBooks } = require('../Models/bookModel'); // Importa las f
  *               items:
  *                 $ref: '#/components/schemas/Libro'
  */
-router.get('/', (req, res) => {
-    const books = getBooks();
-    res.json(books);
+router.get('/', async (req, res) => {
+    const connection = await getConnection();
+    const [rows] = await connection.execute('SELECT * FROM books');
+    await connection.end();
+    res.json(rows);
 });
 
 /**
@@ -87,12 +100,13 @@ router.get('/', (req, res) => {
  *       200:
  *         description: Libro añadido
  */
-router.post('/', (req, res) => {
-    const books = getBooks();
-    const newBook = req.body;
-    books.push(newBook);
-    saveBooks(books);
-    res.json(newBook);
+router.post('/', async (req, res) => {
+    const connection = await getConnection();
+    const { id, title, author_id, genre_id, published_year, description } = req.body;
+    await connection.execute('INSERT INTO books (id, title, author_id, genre_id, published_year, description) VALUES (?, ?, ?, ?, ?, ?)', 
+    [id, title, author_id, genre_id, published_year, description]);
+    await connection.end();
+    res.json(req.body);
 });
 
 /**
@@ -115,11 +129,12 @@ router.post('/', (req, res) => {
  *             schema:
  *               $ref: '#/components/schemas/Libro'
  */
-router.get('/:id', (req, res) => {
-    const books = getBooks();
-    const book = books.find(b => b.id === parseInt(req.params.id));
-    if (book) {
-        res.json(book);
+router.get('/:id', async (req, res) => {
+    const connection = await getConnection();
+    const [rows] = await connection.execute('SELECT * FROM books WHERE id = ?', [req.params.id]);
+    await connection.end();
+    if (rows.length > 0) {
+        res.json(rows[0]);
     } else {
         res.status(404).send('Libro no encontrado');
     }
@@ -154,16 +169,13 @@ router.get('/:id', (req, res) => {
  *       200:
  *         description: Libro actualizado
  */
-router.put('/:id', (req, res) => {
-    const books = getBooks();
-    const book = books.find(b => b.id === parseInt(req.params.id));
-    if (book) {
-        Object.assign(book, req.body);
-        saveBooks(books);
-        res.json(book);
-    } else {
-        res.status(404).send('Libro no encontrado');
-    }
+router.put('/:id', async (req, res) => {
+    const connection = await getConnection();
+    const { title, author_id, genre_id, published_year, description } = req.body;
+    await connection.execute('UPDATE books SET title = ?, author_id = ?, genre_id = ?, published_year = ?, description = ? WHERE id = ?', 
+    [title, author_id, genre_id, published_year, description, req.params.id]);
+    await connection.end();
+    res.json(req.body);
 });
 
 /**
@@ -182,16 +194,11 @@ router.put('/:id', (req, res) => {
  *       200:
  *         description: Libro eliminado
  */
-router.delete('/:id', (req, res) => {
-    const books = getBooks();
-    const bookIndex = books.findIndex(b => b.id === parseInt(req.params.id));
-    if (bookIndex !== -1) {
-        books.splice(bookIndex, 1);
-        saveBooks(books);
-        res.send('Libro eliminado');
-    } else {
-        res.status(404).send('Libro no encontrado');
-    }
+router.delete('/:id', async (req, res) => {
+    const connection = await getConnection();
+    await connection.execute('DELETE FROM books WHERE id = ?', [req.params.id]);
+    await connection.end();
+    res.send('Libro eliminado');
 });
 
 module.exports = router;

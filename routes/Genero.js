@@ -1,6 +1,17 @@
 const express = require('express');
 const router = express.Router();
-const { getGenres, saveGenres } = require('../Models/genreModel');
+const mysql = require('mysql2/promise');
+require('dotenv').config({ path: require('path').resolve(__dirname, '../Direcciones.env') });
+
+const getConnection = async () => {
+    return await mysql.createConnection({
+        host: process.env.DB_HOST,
+        user: process.env.DB_USER,
+        password: process.env.DB_PASSWORD,
+        database: process.env.DB_NAME,
+        port: process.env.DB_PORT
+    });
+};
 
 /**
  * @swagger
@@ -43,9 +54,11 @@ const { getGenres, saveGenres } = require('../Models/genreModel');
  *               items:
  *                 $ref: '#/components/schemas/Género'
  */
-router.get('/', (req, res) => {
-    const genres = getGenres();
-    res.json(genres);
+router.get('/', async (req, res) => {
+    const connection = await getConnection();
+    const [rows] = await connection.execute('SELECT * FROM genres');
+    await connection.end();
+    res.json(rows);
 });
 
 /**
@@ -67,12 +80,12 @@ router.get('/', (req, res) => {
  *       200:
  *         description: Género añadido
  */
-router.post('/', (req, res) => {
-    const genres = getGenres();
-    const newGenre = req.body;
-    genres.push(newGenre);
-    saveGenres(genres);
-    res.json(newGenre);
+router.post('/', async (req, res) => {
+    const connection = await getConnection();
+    const { id, name } = req.body;
+    await connection.execute('INSERT INTO genres (id, name) VALUES (?, ?)', [id, name]);
+    await connection.end();
+    res.json(req.body);
 });
 
 /**
@@ -95,11 +108,12 @@ router.post('/', (req, res) => {
  *             schema:
  *               $ref: '#/components/schemas/Género'
  */
-router.get('/:id', (req, res) => {
-    const genres = getGenres();
-    const genre = genres.find(g => g.id === parseInt(req.params.id));
-    if (genre) {
-        res.json(genre);
+router.get('/:id', async (req, res) => {
+    const connection = await getConnection();
+    const [rows] = await connection.execute('SELECT * FROM genres WHERE id = ?', [req.params.id]);
+    await connection.end();
+    if (rows.length > 0) {
+        res.json(rows[0]);
     } else {
         res.status(404).send('Género no encontrado');
     }
@@ -130,16 +144,12 @@ router.get('/:id', (req, res) => {
  *       200:
  *         description: Género actualizado
  */
-router.put('/:id', (req, res) => {
-    const genres = getGenres();
-    const genre = genres.find(g => g.id === parseInt(req.params.id));
-    if (genre) {
-        Object.assign(genre, req.body);
-        saveGenres(genres);
-        res.json(genre);
-    } else {
-        res.status(404).send('Género no encontrado');
-    }
+router.put('/:id', async (req, res) => {
+    const connection = await getConnection();
+    const { name } = req.body;
+    await connection.execute('UPDATE genres SET name = ? WHERE id = ?', [name, req.params.id]);
+    await connection.end();
+    res.json(req.body);
 });
 
 /**
@@ -158,16 +168,11 @@ router.put('/:id', (req, res) => {
  *       200:
  *         description: Género eliminado
  */
-router.delete('/:id', (req, res) => {
-    const genres = getGenres();
-    const genreIndex = genres.findIndex(g => g.id === parseInt(req.params.id));
-    if (genreIndex !== -1) {
-        genres.splice(genreIndex, 1);
-        saveGenres(genres);
-        res.send('Género eliminado');
-    } else {
-        res.status(404).send('Género no encontrado');
-    }
+router.delete('/:id', async (req, res) => {
+    const connection = await getConnection();
+    await connection.execute('DELETE FROM genres WHERE id = ?', [req.params.id]);
+    await connection.end();
+    res.send('Género eliminado');
 });
 
 module.exports = router;

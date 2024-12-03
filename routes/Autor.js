@@ -1,6 +1,17 @@
 const express = require('express');
 const router = express.Router();
-const { getAuthors, saveAuthors } = require('../Models/authorModel');
+const mysql = require('mysql2/promise');
+require('dotenv').config({ path: require('path').resolve(__dirname, '../Direcciones.env') });
+
+const getConnection = async () => {
+    return await mysql.createConnection({
+        host: process.env.DB_HOST,
+        user: process.env.DB_USER,
+        password: process.env.DB_PASSWORD,
+        database: process.env.DB_NAME,
+        port: process.env.DB_PORT
+    });
+};
 
 /**
  * @swagger
@@ -47,9 +58,11 @@ const { getAuthors, saveAuthors } = require('../Models/authorModel');
  *               items:
  *                 $ref: '#/components/schemas/Autor'
  */
-router.get('/', (req, res) => {
-    const authors = getAuthors();
-    res.json(authors);
+router.get('/', async (req, res) => {
+    const connection = await getConnection();
+    const [rows] = await connection.execute('SELECT * FROM authors');
+    await connection.end();
+    res.json(rows);
 });
 
 /**
@@ -72,12 +85,12 @@ router.get('/', (req, res) => {
  *       200:
  *         description: Autor añadido
  */
-router.post('/', (req, res) => {
-    const authors = getAuthors();
-    const newAuthor = req.body;
-    authors.push(newAuthor);
-    saveAuthors(authors);
-    res.json(newAuthor);
+router.post('/', async (req, res) => {
+    const connection = await getConnection();
+    const { id, name, bio } = req.body;
+    await connection.execute('INSERT INTO authors (id, name, bio) VALUES (?, ?, ?)', [id, name, bio]);
+    await connection.end();
+    res.json(req.body);
 });
 
 /**
@@ -100,11 +113,12 @@ router.post('/', (req, res) => {
  *             schema:
  *               $ref: '#/components/schemas/Autor'
  */
-router.get('/:id', (req, res) => {
-    const authors = getAuthors();
-    const author = authors.find(a => a.id === parseInt(req.params.id));
-    if (author) {
-        res.json(author);
+router.get('/:id', async (req, res) => {
+    const connection = await getConnection();
+    const [rows] = await connection.execute('SELECT * FROM authors WHERE id = ?', [req.params.id]);
+    await connection.end();
+    if (rows.length > 0) {
+        res.json(rows[0]);
     } else {
         res.status(404).send('Autor no encontrado');
     }
@@ -136,16 +150,12 @@ router.get('/:id', (req, res) => {
  *       200:
  *         description: Autor actualizado
  */
-router.put('/:id', (req, res) => {
-    const authors = getAuthors();
-    const author = authors.find(a => a.id === parseInt(req.params.id));
-    if (author) {
-        Object.assign(author, req.body);
-        saveAuthors(authors);
-        res.json(author);
-    } else {
-        res.status(404).send('Autor no encontrado');
-    }
+router.put('/:id', async (req, res) => {
+    const connection = await getConnection();
+    const { id, name, bio } = req.body;
+    await connection.execute('UPDATE authors SET name = ?, bio = ? WHERE id = ?', [name, bio, req.params.id]);
+    await connection.end();
+    res.json(req.body);
 });
 
 /**
@@ -164,16 +174,11 @@ router.put('/:id', (req, res) => {
  *       200:
  *         description: Autor eliminado
  */
-router.delete('/:id', (req, res) => {
-    const authors = getAuthors();
-    const authorIndex = authors.findIndex(a => a.id === parseInt(req.params.id));
-    if (authorIndex !== -1) {
-        authors.splice(authorIndex, 1);
-        saveAuthors(authors);
-        res.send('Autor eliminado');
-    } else {
-        res.status(404).send('Autor no encontrado');
-    }
+router.delete('/:id', async (req, res) => {
+    const connection = await getConnection();
+    await connection.execute('DELETE FROM authors WHERE id = ?', [req.params.id]);
+    await connection.end();
+    res.send('Autor eliminado');
 });
 
 module.exports = router;
