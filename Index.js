@@ -1,4 +1,3 @@
-require('dotenv').config({ path: path.resolve(__dirname, 'Direcciones.env') });
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
@@ -10,6 +9,7 @@ const bookRoutes = require('./routes/Libros');
 const autorRoutes = require('./routes/Autor');
 const genreRoutes = require('./routes/Genero');
 const port = process.env.PORT || 8082;
+require('dotenv').config({ path: path.resolve(__dirname, 'Direcciones.env') });
 
 const app = express();
 app.use(cors());
